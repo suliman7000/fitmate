@@ -3,7 +3,7 @@ import{createRoot}from'react-dom/client';
 import{Dumbbell,LayoutDashboard,CalendarDays,BookOpen,ChartNoAxesCombined,MessageCircle,Settings,Plus,Search,Target,Flame,Weight,Clock,ChevronLeft,Menu,X,Send,Trash2,Activity}from'lucide-react';
 import{ResponsiveContainer,LineChart,Line,XAxis,YAxis,Tooltip,CartesianGrid,AreaChart,Area}from'recharts';
 import'./style.css';
-const API='http://localhost:5000/api';
+const API = ${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api`;
 async function api(path,opts={}){const r=await fetch(API+path,{headers:{'Content-Type':'application/json'},...opts});const d=await r.json();if(!r.ok)throw new Error(d.error||'Request failed');return d}
 function App(){
  const[tab,setTab]=useState('dashboard'),[profile,setProfile]=useState(null),[workouts,setWorkouts]=useState([]),[exercises,setExercises]=useState([]),[logs,setLogs]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[search,setSearch]=useState(''),[muscle,setMuscle]=useState('All'),[chat,setChat]=useState([]),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[modal,setModal]=useState(null),[form,setForm]=useState({exerciseName:'',workoutTitle:'PULL',entries:[{weight:'',reps:'',note:''}],summary:''});
