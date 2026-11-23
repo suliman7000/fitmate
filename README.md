@@ -40,7 +40,7 @@ Open the Vite URL shown in the terminal (usually http://localhost:5173).
 The backend runs on http://localhost:5000.
 
 ## 3. First launch
-On first server start, the app seeds your profile, weekly split, exercise library and initial Push/Pull logs if the database is empty.
+On first server start, the app seeds your profile, weekly split and exercise library if the corresponding collections are empty. Workout logs are not created automatically; they are added when you record completed exercises in the app.
 
 The initial profile uses the details available when this project was prepared:
 - Current weight: 67 kg
