@@ -21,7 +21,7 @@ export async function api(path, opts = {}) {
     }
   });
   const d = await r.json().catch(() => ({}));
-  if (r.status === 401 && path !== '/login') {
+  if (r.status === 401 && !['/login', '/register'].includes(path)) {
     setToken('');
     throw new AuthError(d.error || 'انتهت الجلسة، سجّل الدخول من جديد');
   }
