@@ -572,3 +572,140 @@ p{line-height:1.75}
     margin-inline-start: auto;
   }
 }
+
+/* Sidebar brand layout: preserve the wordmark on desktop and tablet */
+.app > .sidebar .brand {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.app > .sidebar .brand-icon {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+}
+
+.app > .sidebar .brand > div:last-child {
+  display: block;
+  flex: 0 0 auto;
+  min-width: max-content;
+  white-space: nowrap;
+}
+
+.app > .sidebar .brand b,
+.app > .sidebar .brand small {
+  display: block;
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+
+.app > .sidebar .brand b {
+  font-size: 18px;
+  line-height: 1.3;
+  letter-spacing: 1.6px;
+}
+
+.app > .sidebar .brand small {
+  font-size: 9px;
+  line-height: 1.5;
+  letter-spacing: 0.8px;
+}
+
+/* Tablet: place the complete wordmark beneath the icon */
+@media (min-width: 761px) and (max-width: 1100px) {
+  .app > .sidebar .brand {
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 0 28px;
+  }
+
+  .app > .sidebar .brand > div:last-child {
+    flex: 0 0 auto;
+    min-width: max-content;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .app > .sidebar .brand b,
+  .app > .sidebar .brand small {
+    text-align: center;
+  }
+}
+
+/* Mobile: keep the icon only */
+@media (max-width: 760px) {
+  .app > .sidebar .brand {
+    justify-content: center;
+    gap: 0;
+    padding: 0 0 22px;
+  }
+
+  .app > .sidebar .brand > div:last-child {
+    display: none;
+  }
+
+  .app > .sidebar .brand-icon {
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+  }
+}
+
+
+/* Landing typography: preserve Arabic shaping and keep the wordmark intact */
+.landing .landing-brand {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.landing .landing-brand > span {
+  flex: 0 0 38px;
+}
+.landing .landing-brand b,
+.landing .landing-brand small {
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+.landing .landing-nav .landing-actions,
+.landing .landing-nav .landing-menu {
+  flex: 0 0 auto;
+}
+[dir="rtl"].landing .landing-hero h1,
+[dir="rtl"].landing .landing-section-top h2,
+[dir="rtl"].landing .landing-feature-heading h2,
+[dir="rtl"].landing .landing-final h2,
+[dir="rtl"].landing .training-card-copy h3,
+[dir="rtl"].landing .training-feature h3,
+[dir="rtl"].landing .landing-feature-grid h3,
+[dir="rtl"].landing .preview-copy h2 {
+  letter-spacing: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+[dir="rtl"].landing .landing-hero-content > p,
+[dir="rtl"].landing .landing-section-top > p,
+[dir="rtl"].landing .training-card-copy p,
+[dir="rtl"].landing .training-feature p,
+[dir="rtl"].landing .landing-feature-grid p,
+[dir="rtl"].landing .landing-final > p,
+[dir="rtl"].landing .preview-copy p {
+  word-break: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.9;
+}
+@media (max-width: 480px) {
+  .landing .landing-nav {
+    align-items: center;
+  }
+  .landing .landing-brand {
+    max-width: 100%;
+  }
+}
