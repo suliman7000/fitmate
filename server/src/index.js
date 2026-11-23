@@ -218,14 +218,16 @@ app.get('/api/profile', wrap(async (req, res) => res.json(await Profile.findOne(
 app.put('/api/profile', wrap(async (req, res) => {
   const b = req.body || {};
   const update = {};
-  const name = cleanStr(b.name, 60);
-  if (name) update.name = name;
-  const currentWeight = cleanNum(b.currentWeight, 20, 400);
-  if (currentWeight !== undefined) update.currentWeight = currentWeight;
-  const goalWeight = cleanNum(b.goalWeight, 20, 400);
-  if (goalWeight !== undefined) update.goalWeight = goalWeight;
-  const height = cleanNum(b.height, 80, 260);
-  if (height !== undefined) update.height = height;
+  if (typeof b.name === 'string') update.name = b.name.trim().slice(0, 60);
+  for (const [field, min, max] of [['currentWeight', 20, 400], ['goalWeight', 20, 400], ['height', 80, 260]]) {
+    if (Object.prototype.hasOwnProperty.call(b, field)) {
+      if (b[field] === null || b[field] === '') update[field] = null;
+      else {
+        const value = cleanNum(b[field], min, max);
+        if (value !== undefined) update[field] = value;
+      }
+    }
+  }
   const notes = cleanStr(b.notes, 1000);
   if (notes !== undefined) update.notes = notes;
   if (!Object.keys(update).length) return res.status(400).json({ error: 'لا توجد بيانات صالحة للتحديث' });
