@@ -39,11 +39,11 @@ const User = model('User', new Schema({
 }, { timestamps: true }));
 const Profile = model('Profile', new Schema({
   ownerId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
-  name: { type: String, default: 'My Gym Profile' },
-  currentWeight: { type: Number, default: 67 },
-  goalWeight: { type: Number, default: 72 },
+  name: { type: String, default: '' },
+  currentWeight: Number,
+  goalWeight: Number,
   height: Number,
-  notes: String
+  notes: { type: String, default: '' }
 }, { timestamps: true }));
 const Exercise = model('Exercise', new Schema({
   name: String, muscle: String, equipment: String, instructions: [String],
@@ -105,9 +105,9 @@ async function seedExercises() {
   }
 }
 
-async function createUserWorkspace(userId, name) {
+async function createUserWorkspace(userId) {
   if (!await Profile.exists({ ownerId: userId })) {
-    await Profile.create({ ownerId: userId, name: name || 'My Gym Profile', currentWeight: 67, goalWeight: 72 });
+    await Profile.create({ ownerId: userId, name: '', notes: '' });
   }
   if (!await Workout.exists({ ownerId: userId })) {
     const all = await Exercise.find();
@@ -194,9 +194,7 @@ app.post('/api/register', registerLimiter, wrap(async (req, res) => {
       Log.updateMany({ ownerId: { $exists: false } }, { $set: { ownerId: user._id } })
     ]);
   }
-  await createUserWorkspace(user._id, name);
-  const profile = await Profile.findOne({ ownerId: user._id });
-  if (profile && profile.name === 'My Gym Profile') { profile.name = name; await profile.save(); }
+  await createUserWorkspace(user._id);
   res.status(201).json({ token: issueToken(user), user: { id: user._id, email: user.email } });
 }));
 
@@ -307,5 +305,14 @@ const port = process.env.PORT || 5000;
 // When deploying, leave HOST unset so the hosting platform can reach it.
 const host = process.env.HOST || '0.0.0.0';
 mongoose.connect(MONGODB_URI)
-  .then(async () => { await seedExercises(); app.listen(port, host, () => console.log(`FitMate API running on http://${host === '0.0.0.0' ? 'localhost' : host}:${port}`)); })
+  .then(async () => {
+    const ProfileMigration = model('ProfileMigration', new Schema({ _id: String }, { versionKey: false }));
+    const migrationId = 'blank-profile-fields-v1';
+    if (!await ProfileMigration.exists({ _id: migrationId })) {
+      await Profile.updateMany({}, { $set: { name: '', currentWeight: null, goalWeight: null, height: null, notes: '' } });
+      await ProfileMigration.create({ _id: migrationId });
+    }
+    await seedExercises();
+    app.listen(port, host, () => console.log(`FitMate API running on http://${host === '0.0.0.0' ? 'localhost' : host}:${port}`));
+  })
   .catch(err => { console.error('MongoDB connection failed:', err.message); process.exit(1); });
