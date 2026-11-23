@@ -157,3 +157,12 @@
 @media(max-width:1050px){.landing-nav .landing-actions{gap:6px}.landing-nav .landing-tool{padding:8px}.landing-nav .landing-tool span{font-size:10px}}
 @media(max-width:760px){.landing-nav .landing-actions{gap:6px}.landing-nav .landing-tool{padding:7px 8px;font-size:10px}.landing-nav .theme-tool{width:32px;height:32px}.landing-nav .landing-tool span{display:inline}.landing .training-photo{height:220px}.workout-preview-modal{grid-template-columns:1fr;max-width:480px}.workout-preview-modal>img{height:210px;min-height:210px}.preview-copy{padding:24px 22px}.preview-copy h2{font-size:25px}.landing-light .landing-nav nav.open{background:#f7f8f3;border-bottom-color:#dfe3d7}.landing-light .landing-nav nav button{color:#30382a}}
 @media(max-width:390px){.landing-nav .landing-tool span{display:none}.landing-nav .landing-actions{gap:5px}.landing-nav .landing-login{font-size:9px}}
+
+
+.landing .training-photo-wrap{position:relative}
+.landing .training-photo-arrow{position:absolute;z-index:4;bottom:15px;left:15px;width:40px;height:40px;border:0;border-radius:50%;background:var(--acid);color:#11170b;display:grid;place-items:center;box-shadow:0 4px 18px #0005;transition:transform .2s,background .2s}
+.landing .training-photo-arrow:hover{transform:translateY(-3px) scale(1.05);background:#d7ff80}
+.landing .training-photo-arrow svg{width:18px;height:18px}
+.landing .training-photo-arrow:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.landing .training-image-button .training-photo>span.image-preview-hint{bottom:15px;right:14px;top:auto}
+.landing .training-image-button .training-photo>span:first-of-type{top:15px;bottom:auto}
