@@ -166,3 +166,163 @@
 .landing .training-photo-arrow:focus-visible{outline:3px solid #fff;outline-offset:3px}
 .landing .training-image-button .training-photo>span.image-preview-hint{bottom:15px;right:14px;top:auto}
 .landing .training-image-button .training-photo>span:first-of-type{top:15px;bottom:auto}
+
+
+/* Responsive foundation: resilient layouts, readable text and bilingual content */
+:root{font-family:Inter,'Cairo',system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;text-rendering:optimizeLegibility}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-behavior:smooth}
+body{min-width:320px;overflow-x:hidden}
+#root{min-height:100vh}
+*,*::before,*::after{min-width:0}
+img,svg,video,canvas{max-width:100%}
+button,input,select,textarea{max-width:100%;min-width:0}
+h1,h2,h3,h4,p,small,b,strong,span,label,button,a{overflow-wrap:break-word;word-break:normal}
+p{line-height:1.75}
+.main,.sidebar,.panel,.stat,.welcome,.section-head,.profile-overview,.settings,.program-list,.workout-day,.exercise-line,.log-row,.coach,.chat-area,.chat-input{min-width:0}
+.main{min-height:100vh}
+.main header{gap:16px;min-width:0}
+.main header>div:first-child{min-width:0}
+.main h1{line-height:1.35;overflow-wrap:anywhere}
+.eyebrow{letter-spacing:.08em;line-height:1.6;overflow-wrap:anywhere}
+.section-head{gap:14px;flex-wrap:wrap}
+.section-head>div{min-width:0;flex:1 1 220px}
+.section-head .primary,.section-head .ghost{flex:0 0 auto;max-width:100%;white-space:normal}
+.profile-overview{display:flex;align-items:center;justify-content:space-between;gap:22px;margin:0 0 22px;padding:20px}
+.profile-overview-copy{flex:1 1 300px;min-width:0}
+.profile-overview-copy h3{font-size:19px;margin:5px 0}
+.profile-overview-copy p{font-size:12px;color:#aab5c2;margin:0 0 7px}
+.profile-overview-copy small{font-size:10px;color:var(--lime);line-height:1.7}
+.profile-overview-actions{display:flex;flex:0 1 auto;flex-wrap:wrap;gap:9px}
+.profile-overview-actions button{white-space:normal}
+.profile-notice{grid-column:1/-1;margin:0;padding:10px 12px;border-radius:9px;background:#263629;color:#d9f5c1;font-size:12px}
+.settings{width:100%;max-width:760px;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+.settings>h3,.settings>.profile-notice,.settings>.primary{grid-column:1/-1}
+.settings label{min-width:0;line-height:1.7}
+.settings input,.settings select,.settings textarea{width:100%;min-height:44px}
+.settings textarea{min-height:92px;resize:vertical}
+.week-grid{grid-template-columns:repeat(7,minmax(0,1fr))}
+.day-card{min-width:0;overflow-wrap:anywhere}
+.day-card b,.day-card span{overflow-wrap:anywhere}
+.program-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+.exercise-line{gap:9px}
+.exercise-info{min-width:0;overflow-wrap:anywhere}
+.exercise-info b{overflow-wrap:anywhere}
+.exercise-line>strong{white-space:nowrap;flex:0 0 auto}
+.log-row>div:nth-child(2){min-width:0;overflow-wrap:anywhere}
+.log-row>span{min-width:0;overflow-wrap:anywhere}
+.bubble{overflow-wrap:anywhere;word-break:normal}
+.chat-input input{width:100%;min-width:0}
+.landing{width:100%;overflow-x:clip}
+.landing-nav,.landing-footer,.landing-section-top,.training-feature{min-width:0}
+.landing-nav nav,.landing-actions{min-width:0}
+.landing-brand{min-width:0;flex:0 1 auto}
+.landing-hero h1,.landing-section-top h2,.landing-feature-heading h2,.landing-final h2{overflow-wrap:normal;word-break:normal;hyphens:auto}
+.landing-strip>div{min-width:0}
+.landing-strip strong,.landing-strip span{overflow-wrap:anywhere}
+.training-grid,.landing-feature-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.training-card,.landing-feature-grid article{min-width:0}
+.training-card-copy h3,.training-card-copy p{overflow-wrap:anywhere}
+@media(max-width:1100px){
+ .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .week-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .profile-overview{align-items:flex-start}
+ .landing-strip{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .landing-strip .strip-note{display:none}
+ .training-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .landing-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+ .main{padding:18px 13px 40px}
+ .main header{align-items:flex-start;flex-wrap:wrap}
+ .header-right{max-width:100%;flex-wrap:wrap}
+ .welcome{gap:10px}
+ .welcome>div:first-child{min-width:0;flex:1}
+ .welcome h2{line-height:1.45;overflow-wrap:anywhere}
+ .profile-overview{display:grid;grid-template-columns:1fr;gap:15px}
+ .profile-overview-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .profile-overview-actions button{width:100%;padding:11px 9px}
+ .settings{grid-template-columns:1fr;max-width:none}
+ .settings>h3,.settings>.profile-notice,.settings>.primary{grid-column:1}
+ .section-head{align-items:flex-start}
+ .section-head .primary,.section-head .ghost{max-width:100%}
+ .program-list{grid-template-columns:1fr}
+ .log-row{flex-wrap:wrap}
+ .log-row>span{margin-right:auto}
+ .landing-nav{gap:10px}
+ .landing-section-top{display:block}
+ .landing-section-top>p{margin-top:14px}
+ .training-feature{grid-template-columns:1fr}
+ .landing-footer{flex-wrap:wrap}
+}
+@media(max-width:480px){
+ .sidebar{width:54px;padding:14px 6px}
+ .brand{padding:0 2px 22px}
+ .brand-icon{width:38px;height:38px}
+ .user{padding:6px}
+ .nav{padding:12px 3px}
+ .main{width:calc(100% - 54px);margin-right:54px;padding:15px 10px 32px}
+ .main header{margin-bottom:17px}
+ .main h1{font-size:clamp(18px,5vw,22px)}
+ .header-right{gap:6px}
+ .welcome{padding:17px;min-height:0}
+ .welcome h2{font-size:clamp(17px,5vw,21px)}
+ .welcome p{font-size:11px}
+ .hero-art{display:none}
+ .stats{gap:8px;margin:12px 0 22px}
+ .stat{padding:11px}
+ .stat strong{font-size:clamp(17px,5vw,21px);overflow-wrap:anywhere}
+ .stat-top{font-size:10px;gap:5px}
+ .stat small{font-size:9px}
+ .week-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ .day-card{padding:11px 8px;min-height:105px}
+ .day-card b{font-size:14px}
+ .section-head h3{font-size:16px;line-height:1.45}
+ .section-head .primary,.section-head .ghost{font-size:10px;padding:9px}
+ .profile-overview{padding:15px}
+ .profile-overview-actions{grid-template-columns:1fr}
+ .workout-title{gap:8px}
+ .workout-title h3{font-size:18px;overflow-wrap:anywhere}
+ .exercise-line{gap:7px}
+ .exercise-line>strong{font-size:10px}
+ .exercise-info b{font-size:11px}
+ .log-row{gap:8px}
+ .log-row>span{max-width:100%;font-size:10px}
+ .entry-fields{grid-template-columns:1fr}
+ .chat-area{padding:13px}
+ .bubble{max-width:100%;font-size:11px}
+ .landing-nav{height:auto;min-height:68px;padding:10px 12px;gap:7px;flex-wrap:wrap}
+ .landing-brand b{font-size:15px}
+ .landing-brand>span{width:33px;height:33px}
+ .landing-actions{gap:5px;margin-right:auto}
+ .landing-join{padding:9px 10px;font-size:9px}
+ .landing-hero{min-height:560px;padding:55px 19px}
+ .landing-hero h1{font-size:clamp(40px,12vw,54px);letter-spacing:-1.5px}
+ .landing-hero-content>p{font-size:11px}
+ .landing-hero-buttons{flex-wrap:wrap;gap:12px}
+ .landing-strip{padding:17px 12px;gap:6px}
+ .landing-strip>div{gap:5px;padding-left:6px}
+ .landing-strip strong{font-size:16px}
+ .landing-strip span{font-size:8px}
+ .landing-training,.landing-features{padding:58px 15px}
+ .landing-section-top h2,.landing-feature-heading h2{font-size:clamp(34px,9vw,44px);letter-spacing:-1px}
+ .training-grid{grid-template-columns:1fr;gap:18px}
+ .landing .training-photo{height:230px}
+ .landing-feature-grid{grid-template-columns:1fr}
+ .landing-final h2{font-size:clamp(38px,10vw,50px)}
+ .landing-footer{padding:16px}
+ .workout-preview-overlay{padding:10px}
+ .workout-preview-modal{max-height:94vh}
+ .preview-copy{padding:20px 17px}
+}
+@media(max-width:360px){
+ .main{padding-left:8px;padding-right:8px}
+ .stats{grid-template-columns:1fr}
+ .week-grid{grid-template-columns:1fr}
+ .landing-actions .landing-tool span{display:none}
+ .landing-strip{grid-template-columns:1fr 1fr}
+ .landing-strip>div:last-of-type{border:0}
+}
+[dir="rtl"]{text-align:inherit}
+[dir="ltr"]{text-align:inherit}
+[dir="rtl"] .main,[dir="rtl"] .settings{direction:rtl}
+[dir="ltr"] .main,[dir="ltr"] .settings{direction:ltr}
