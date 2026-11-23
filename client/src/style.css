@@ -867,3 +867,71 @@ p{line-height:1.75}
     gap: 12px;
   }
 }
+
+/* Landing hero layout: reserve a dedicated row for the description */
+.landing .landing-hero {
+  min-width: 0;
+}
+.landing .landing-hero-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: start;
+  align-content: center;
+  flex: 0 1 590px;
+  width: 100%;
+  max-width: 590px;
+  min-width: 0;
+}
+.landing .landing-hero-content > .landing-kicker,
+.landing .landing-hero-content > h1,
+.landing .landing-hero-content > p,
+.landing .landing-hero-content > .landing-hero-buttons,
+.landing .landing-hero-content > .landing-proof {
+  position: relative;
+  inset: auto;
+  float: none;
+  grid-column: 1;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.landing .landing-hero-content > p {
+  display: block;
+  margin: 0 0 28px;
+  padding: 0;
+  line-height: 1.9;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+  z-index: 1;
+}
+.landing .landing-hero-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px 23px;
+  margin: 0;
+  z-index: 2;
+}
+.landing .landing-hero-buttons > button {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: 100%;
+  white-space: normal;
+}
+.landing .landing-proof {
+  margin-top: 55px;
+}
+@media (max-width: 760px) {
+  .landing .landing-hero-content {
+    flex-basis: 100%;
+    width: 100%;
+  }
+  .landing .landing-hero-content > p {
+    margin-bottom: 22px;
+  }
+  .landing .landing-proof {
+    margin-top: 32px;
+  }
+}
