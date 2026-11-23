@@ -139,6 +139,7 @@ const MAX_COACH_CHARS = 500;
 const limiterBase = { standardHeaders: 'draft-7', legacyHeaders: false };
 const apiLimiter = rateLimit({ ...limiterBase, windowMs: 15 * 60 * 1000, limit: 300, message: { error: 'طلبات كثيرة، حاول لاحقاً.' } });
 const loginLimiter = rateLimit({ ...limiterBase, windowMs: 15 * 60 * 1000, limit: 10, skipSuccessfulRequests: true, message: { error: 'محاولات دخول كثيرة، حاول بعد 15 دقيقة.' } });
+const registerLimiter = rateLimit({ ...limiterBase, windowMs: 60 * 60 * 1000, limit: 5, message: { error: 'محاولات إنشاء حساب كثيرة، حاول بعد ساعة.' } });
 const coachLimiter = rateLimit({ ...limiterBase, windowMs: 10 * 60 * 1000, limit: 20, message: { error: 'أسئلة كثيرة للمدرب، انتظر قليلاً.' } });
 
 // ---------- authentication ----------
@@ -172,7 +173,7 @@ const issueToken = user => jwt.sign({ sub: String(user._id) }, JWT_SECRET, { alg
 app.use('/api', apiLimiter);
 app.get('/api/health', (_, res) => res.json({ ok: true }));
 
-app.post('/api/register', loginLimiter, wrap(async (req, res) => {
+app.post('/api/register', registerLimiter, wrap(async (req, res) => {
   const email = cleanStr(req.body?.email, 254)?.toLowerCase();
   const password = req.body?.password;
   const name = cleanStr(req.body?.name, 60) || 'My Gym Profile';
