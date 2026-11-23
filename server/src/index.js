@@ -7,13 +7,15 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import { promisify } from 'util';
+const scryptAsync = promisify(crypto.scrypt);
 
 dotenv.config();
 
 // ---------- required configuration (fail fast) ----------
-const { MONGODB_URI, JWT_SECRET, APP_PASSWORD } = process.env;
-if (!MONGODB_URI || !APP_PASSWORD || !JWT_SECRET || JWT_SECRET.length < 32) {
-  console.error('Missing config. In server/.env set MONGODB_URI, APP_PASSWORD and JWT_SECRET (at least 32 random characters). See .env.example.');
+const { MONGODB_URI, JWT_SECRET } = process.env;
+if (!MONGODB_URI || !JWT_SECRET || JWT_SECRET.length < 32) {
+  console.error('Missing config. In server/.env set MONGODB_URI and JWT_SECRET (at least 32 random characters). See .env.example.');
   process.exit(1);
 }
 
@@ -31,23 +33,30 @@ app.use(cors({
 app.use(express.json({ limit: '100kb' }));
 
 const { Schema, model } = mongoose;
+const User = model('User', new Schema({
+  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+  passwordHash: { type: String, required: true }
+}, { timestamps: true }));
 const Profile = model('Profile', new Schema({
-  name: { type: String, default: 'My Gym Profile' },
-  currentWeight: { type: Number, default: 67 },
-  goalWeight: { type: Number, default: 72 },
+  ownerId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
+  name: { type: String, default: '' },
+  currentWeight: Number,
+  goalWeight: Number,
   height: Number,
-  notes: String
+  notes: { type: String, default: '' }
 }, { timestamps: true }));
 const Exercise = model('Exercise', new Schema({
   name: String, muscle: String, equipment: String, instructions: [String],
   sets: Number, reps: String, imageQuery: String
 }));
 const Workout = model('Workout', new Schema({
+  ownerId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
   day: Number, title: String, focus: String, rest: Boolean,
   exercises: [{ exerciseId: { type: Schema.Types.ObjectId, ref: 'Exercise' }, name: String,
     sets: Number, reps: String, grip: String, notes: String }]
 }));
 const Log = model('Log', new Schema({
+  ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   date: { type: Date, default: Date.now }, workoutTitle: String,
   exerciseName: String, entries: [{ weight: String, reps: Number, note: String }],
   summary: String
@@ -89,19 +98,26 @@ const split = [
  {day:7,title:'REST',focus:'استشفاء',rest:true,items:[]}
 ];
 
-async function seed() {
-  if (await Profile.countDocuments() === 0) await Profile.create({ name:'Suleyman', currentWeight:67, goalWeight:72 });
+async function seedExercises() {
   if (await Exercise.countDocuments() === 0) {
     const docs = initialExercises.map(([name,muscle,equipment,sets,reps,instructions]) => ({name,muscle,equipment,sets,reps,instructions,imageQuery:name+' gym exercise correct form'}));
     await Exercise.insertMany(docs);
   }
-  if (await Workout.countDocuments() === 0) {
+}
+
+async function createUserWorkspace(userId) {
+  if (!await Profile.exists({ ownerId: userId })) {
+    await Profile.create({ ownerId: userId, name: '', notes: '' });
+  }
+  if (!await Workout.exists({ ownerId: userId })) {
     const all = await Exercise.find();
     const byName = Object.fromEntries(all.map(e=>[e.name,e]));
-    for (const day of split) await Workout.create({
-      day:day.day,title:day.title,focus:day.focus,rest:!!day.rest,
-      exercises:day.items.map(([name,sets,reps,grip])=>({exerciseId:byName[name]._id,name,sets,reps,grip:grip||'',notes:''}))
-    });
+    await Workout.insertMany(split.map(day => ({
+      ownerId: userId, day:day.day,title:day.title,focus:day.focus,rest:!!day.rest,
+      exercises:day.items.map(([exerciseName,sets,reps,grip])=>({
+        exerciseId:byName[exerciseName]?._id,name:exerciseName,sets,reps,grip:grip||'',notes:''
+      }))
+    })));
   }
 }
 
@@ -116,11 +132,6 @@ const cleanNum = (v, min, max) => {
   const n = Number(v);
   return Number.isFinite(n) && n >= min && n <= max ? n : undefined;
 };
-const safeEqual = (a, b) => {
-  const ha = crypto.createHash('sha256').update(String(a)).digest();
-  const hb = crypto.createHash('sha256').update(String(b)).digest();
-  return crypto.timingSafeEqual(ha, hb);
-};
 const WORKOUT_TITLES = ['PUSH', 'PULL', 'LEGS', 'UPPER'];
 const MAX_COACH_CHARS = 500;
 
@@ -128,52 +139,99 @@ const MAX_COACH_CHARS = 500;
 const limiterBase = { standardHeaders: 'draft-7', legacyHeaders: false };
 const apiLimiter = rateLimit({ ...limiterBase, windowMs: 15 * 60 * 1000, limit: 300, message: { error: 'طلبات كثيرة، حاول لاحقاً.' } });
 const loginLimiter = rateLimit({ ...limiterBase, windowMs: 15 * 60 * 1000, limit: 10, skipSuccessfulRequests: true, message: { error: 'محاولات دخول كثيرة، حاول بعد 15 دقيقة.' } });
+const registerLimiter = rateLimit({ ...limiterBase, windowMs: 60 * 60 * 1000, limit: 5, message: { error: 'محاولات إنشاء حساب كثيرة، حاول بعد ساعة.' } });
 const coachLimiter = rateLimit({ ...limiterBase, windowMs: 10 * 60 * 1000, limit: 20, message: { error: 'أسئلة كثيرة للمدرب، انتظر قليلاً.' } });
 
-// ---------- auth ----------
+// ---------- authentication ----------
+async function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const derived = await scryptAsync(password, salt, 64);
+  return salt + ':' + derived.toString('hex');
+}
+async function verifyPassword(password, stored) {
+  const [salt, key] = String(stored || '').split(':');
+  if (!salt || !key) return false;
+  const derived = await scryptAsync(password, salt, 64);
+  const expected = Buffer.from(key, 'hex');
+  return expected.length === derived.length && crypto.timingSafeEqual(expected, derived);
+}
+
 function requireAuth(req, res, next) {
   const h = req.headers.authorization || '';
   const token = h.startsWith('Bearer ') ? h.slice(7) : '';
   try {
-    jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
+    const payload = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
+    if (!isId(payload.sub)) return res.status(401).json({ error: 'جلسة غير صالحة. سجّل الدخول من جديد.' });
+    req.userId = new mongoose.Types.ObjectId(payload.sub);
     next();
   } catch {
     res.status(401).json({ error: 'غير مصرّح. سجّل الدخول أولاً.' });
   }
 }
+const issueToken = user => jwt.sign({ sub: String(user._id) }, JWT_SECRET, { algorithm: 'HS256', expiresIn: '7d' });
 
 app.use('/api', apiLimiter);
 app.get('/api/health', (_, res) => res.json({ ok: true }));
-app.post('/api/login', loginLimiter, (req, res) => {
-  const pw = req.body?.password;
-  if (typeof pw !== 'string' || !safeEqual(pw, APP_PASSWORD)) {
-    return res.status(401).json({ error: 'كلمة المرور غير صحيحة' });
-  }
-  const token = jwt.sign({ sub: 'owner' }, JWT_SECRET, { algorithm: 'HS256', expiresIn: '7d' });
-  res.json({ token });
-});
 
-// Everything below this line requires a valid token.
+app.post('/api/register', registerLimiter, wrap(async (req, res) => {
+  const email = cleanStr(req.body?.email, 254)?.toLowerCase();
+  const password = req.body?.password;
+  const name = cleanStr(req.body?.name, 60) || 'My Gym Profile';
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: 'أدخل بريداً إلكترونياً صحيحاً.' });
+  }
+  if (typeof password !== 'string' || password.length < 8 || password.length > 128) {
+    return res.status(400).json({ error: 'كلمة المرور يجب أن تكون بين 8 و128 حرفاً.' });
+  }
+  if (await User.exists({ email })) return res.status(409).json({ error: 'هذا البريد مسجّل مسبقاً. جرّب تسجيل الدخول.' });
+  const user = await User.create({ email, passwordHash: await hashPassword(password) });
+  const firstUser = await User.findOne().sort({ createdAt: 1, _id: 1 });
+  if (String(firstUser._id) === String(user._id)) {
+    // The first account inherits the existing single-user FitMate data.
+    await Promise.all([
+      Profile.updateMany({ ownerId: { $exists: false } }, { $set: { ownerId: user._id } }),
+      Workout.updateMany({ ownerId: { $exists: false } }, { $set: { ownerId: user._id } }),
+      Log.updateMany({ ownerId: { $exists: false } }, { $set: { ownerId: user._id } })
+    ]);
+  }
+  await createUserWorkspace(user._id);
+  res.status(201).json({ token: issueToken(user), user: { id: user._id, email: user.email } });
+}));
+
+app.post('/api/login', loginLimiter, wrap(async (req, res) => {
+  const email = cleanStr(req.body?.email, 254)?.toLowerCase();
+  const password = req.body?.password;
+  if (!email || typeof password !== 'string') return res.status(400).json({ error: 'أدخل البريد الإلكتروني وكلمة المرور.' });
+  const user = await User.findOne({ email });
+  if (!user || !await verifyPassword(password, user.passwordHash)) {
+    return res.status(401).json({ error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' });
+  }
+  res.json({ token: issueToken(user), user: { id: user._id, email: user.email } });
+}));
+
+// Everything below this line requires a valid user token.
 app.use('/api', requireAuth);
 
 // ---------- routes ----------
-app.get('/api/profile', wrap(async (_, res) => res.json(await Profile.findOne())));
+app.get('/api/profile', wrap(async (req, res) => res.json(await Profile.findOne({ ownerId: req.userId }))));
 
 app.put('/api/profile', wrap(async (req, res) => {
   const b = req.body || {};
   const update = {};
-  const name = cleanStr(b.name, 60);
-  if (name) update.name = name;
-  const currentWeight = cleanNum(b.currentWeight, 20, 400);
-  if (currentWeight !== undefined) update.currentWeight = currentWeight;
-  const goalWeight = cleanNum(b.goalWeight, 20, 400);
-  if (goalWeight !== undefined) update.goalWeight = goalWeight;
-  const height = cleanNum(b.height, 80, 260);
-  if (height !== undefined) update.height = height;
+  if (typeof b.name === 'string') update.name = b.name.trim().slice(0, 60);
+  for (const [field, min, max] of [['currentWeight', 20, 400], ['goalWeight', 20, 400], ['height', 80, 260]]) {
+    if (Object.prototype.hasOwnProperty.call(b, field)) {
+      if (b[field] === null || b[field] === '') update[field] = null;
+      else {
+        const value = cleanNum(b[field], min, max);
+        if (value !== undefined) update[field] = value;
+      }
+    }
+  }
   const notes = cleanStr(b.notes, 1000);
   if (notes !== undefined) update.notes = notes;
   if (!Object.keys(update).length) return res.status(400).json({ error: 'لا توجد بيانات صالحة للتحديث' });
-  const p = await Profile.findOneAndUpdate({}, { $set: update }, { new: true, upsert: true });
+  const p = await Profile.findOneAndUpdate({ ownerId: req.userId }, { $set: update }, { new: true });
   res.json(p);
 }));
 
@@ -182,9 +240,9 @@ app.get('/api/exercises', wrap(async (req, res) => {
   res.json(await Exercise.find(muscle ? { muscle } : {}).sort({ muscle: 1, name: 1 }));
 }));
 
-app.get('/api/workouts', wrap(async (_, res) => res.json(await Workout.find().sort({ day: 1 }))));
+app.get('/api/workouts', wrap(async (req, res) => res.json(await Workout.find({ ownerId: req.userId }).sort({ day: 1 }))));
 
-app.get('/api/logs', wrap(async (_, res) => res.json(await Log.find().sort({ date: -1 }).limit(100))));
+app.get('/api/logs', wrap(async (req, res) => res.json(await Log.find({ ownerId: req.userId }).sort({ date: -1 }).limit(100))));
 
 app.post('/api/logs', wrap(async (req, res) => {
   const b = req.body || {};
@@ -198,13 +256,13 @@ app.post('/api/logs', wrap(async (req, res) => {
       reps: cleanNum(e.reps, 0, 1000),
       note: cleanStr(e.note, 200) || ''
     }));
-  const log = await Log.create({ exerciseName, workoutTitle, entries, summary: cleanStr(b.summary, 1000) || '' });
+  const log = await Log.create({ ownerId: req.userId, exerciseName, workoutTitle, entries, summary: cleanStr(b.summary, 1000) || '' });
   res.status(201).json(log);
 }));
 
 app.delete('/api/logs/:id', wrap(async (req, res) => {
   if (!isId(req.params.id)) return res.status(400).json({ error: 'معرّف غير صالح' });
-  const removed = await Log.findByIdAndDelete(req.params.id);
+  const removed = await Log.findOneAndDelete({ _id: req.params.id, ownerId: req.userId });
   if (!removed) return res.status(404).json({ error: 'السجل غير موجود' });
   res.json({ ok: true });
 }));
@@ -214,7 +272,7 @@ app.post('/api/coach', coachLimiter, wrap(async (req, res) => {
   const message = typeof req.body?.message === 'string' ? req.body.message.trim() : '';
   if (!message) return res.status(400).json({ error: 'اكتب سؤالك أولاً.' });
   if (message.length > MAX_COACH_CHARS) return res.status(400).json({ error: `الرسالة طويلة، الحد الأقصى ${MAX_COACH_CHARS} حرف.` });
-  const [profile, workouts, logs] = await Promise.all([Profile.findOne(), Workout.find(), Log.find().sort({ date: -1 }).limit(20)]);
+  const [profile, workouts, logs] = await Promise.all([Profile.findOne({ ownerId: req.userId }), Workout.find({ ownerId: req.userId }), Log.find({ ownerId: req.userId }).sort({ date: -1 }).limit(20)]);
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   try {
     const response = await client.chat.completions.create({
@@ -237,6 +295,7 @@ app.use('/api', (req, res) => res.status(404).json({ error: 'المسار غير
 app.use((err, req, res, next) => {
   if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'JSON غير صالح' });
   if (err.type === 'entity.too.large') return res.status(413).json({ error: 'الطلب كبير جداً' });
+  if (err.code === 11000) return res.status(409).json({ error: 'هذا البريد مسجّل مسبقاً.' });
   if (err.name === 'ValidationError' || err.name === 'CastError') return res.status(400).json({ error: 'بيانات غير صالحة' });
   console.error(err);
   res.status(500).json({ error: 'حدث خطأ في الخادم' });
@@ -248,5 +307,14 @@ const port = process.env.PORT || 5000;
 // When deploying, leave HOST unset so the hosting platform can reach it.
 const host = process.env.HOST || '0.0.0.0';
 mongoose.connect(MONGODB_URI)
-  .then(async () => { await seed(); app.listen(port, host, () => console.log(`FitMate API running on http://${host === '0.0.0.0' ? 'localhost' : host}:${port}`)); })
+  .then(async () => {
+    const ProfileMigration = model('ProfileMigration', new Schema({ _id: String }, { versionKey: false }));
+    const migrationId = 'blank-profile-fields-v1';
+    if (!await ProfileMigration.exists({ _id: migrationId })) {
+      await Profile.updateMany({}, { $set: { name: '', currentWeight: null, goalWeight: null, height: null, notes: '' } });
+      await ProfileMigration.create({ _id: migrationId });
+    }
+    await seedExercises();
+    app.listen(port, host, () => console.log(`FitMate API running on http://${host === '0.0.0.0' ? 'localhost' : host}:${port}`));
+  })
   .catch(err => { console.error('MongoDB connection failed:', err.message); process.exit(1); });
