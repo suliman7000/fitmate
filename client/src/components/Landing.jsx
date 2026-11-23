@@ -31,7 +31,7 @@ export default function Landing({onLogin,onRegister}){
   </header>
   <main>
    <section className="landing-hero" id="top" style={{'--hero-image':`url("${heroImage}")`}}><div className="landing-hero-shade"/>
-    <div className="landing-hero-content"><span className="landing-kicker"><i/> {t.heroKicker}</span><h1>{t.hero1}<br/><em>{t.hero2}</em></h1><p>{t.heroDesc}</p><div className="landing-hero-buttons"><button className="landing-cta" onClick={onRegister}>{t.start} {arrow}</button><button className="landing-watch" onClick={()=>go('training')}><span><Play size={15} fill="currentColor"/></span>{t.explore}</button></div><div className="landing-proof"><div className="proof-avatars"><b>F</b><b>M</b><b>+</b></div><span>{t.proof}</span></div></div>
+    <div className="landing-hero-content"><span className="landing-kicker"><i/> {t.heroKicker}</span><h1>{t.hero1}<br/><em>{t.hero2}</em></h1><div className="landing-hero-buttons"><button className="landing-cta" onClick={onRegister}>{t.start} {arrow}</button><button className="landing-watch" onClick={()=>go('training')}><span><Play size={15} fill="currentColor"/></span>{t.explore}</button></div><div className="landing-proof"><div className="proof-avatars"><b>F</b><b>M</b><b>+</b></div><span>{t.proof}</span></div></div>
     <div className="hero-vertical">DISCIPLINE · CONSISTENCY · PROGRESS</div><div className="hero-index"><b>01</b><span/> 04</div>
    </section>
    <section className="landing-strip">{t.steps.map((s,i)=><div key={s}><strong>0{i+1}</strong><span>{s}</span></div>)}<div className="strip-note">{t.strip}</div></section>
