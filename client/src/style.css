@@ -657,3 +657,55 @@ p{line-height:1.75}
     height: 38px;
   }
 }
+
+
+/* Landing typography: preserve Arabic shaping and keep the wordmark intact */
+.landing .landing-brand {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.landing .landing-brand > span {
+  flex: 0 0 38px;
+}
+.landing .landing-brand b,
+.landing .landing-brand small {
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+.landing .landing-nav .landing-actions,
+.landing .landing-nav .landing-menu {
+  flex: 0 0 auto;
+}
+[dir="rtl"].landing .landing-hero h1,
+[dir="rtl"].landing .landing-section-top h2,
+[dir="rtl"].landing .landing-feature-heading h2,
+[dir="rtl"].landing .landing-final h2,
+[dir="rtl"].landing .training-card-copy h3,
+[dir="rtl"].landing .training-feature h3,
+[dir="rtl"].landing .landing-feature-grid h3,
+[dir="rtl"].landing .preview-copy h2 {
+  letter-spacing: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+[dir="rtl"].landing .landing-hero-content > p,
+[dir="rtl"].landing .landing-section-top > p,
+[dir="rtl"].landing .training-card-copy p,
+[dir="rtl"].landing .training-feature p,
+[dir="rtl"].landing .landing-feature-grid p,
+[dir="rtl"].landing .landing-final > p,
+[dir="rtl"].landing .preview-copy p {
+  word-break: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.9;
+}
+@media (max-width: 480px) {
+  .landing .landing-nav {
+    align-items: center;
+  }
+  .landing .landing-brand {
+    max-width: 100%;
+  }
+}
