@@ -43,6 +43,13 @@ const Profile = model('Profile', new Schema({
   currentWeight: Number,
   goalWeight: Number,
   height: Number,
+  age: Number,
+  sex: { type: String, enum: ['male','female','other',''] },
+  fitnessGoal: { type: String, enum: ['muscle','fat_loss','strength','fitness'] },
+  experience: { type: String, enum: ['beginner','intermediate','advanced'] },
+  trainingDays: Number,
+  equipment: { type: String, default: '' },
+  limitations: { type: String, default: '' },
   notes: { type: String, default: '' }
 }, { timestamps: true }));
 const Exercise = model('Exercise', new Schema({
@@ -228,6 +235,13 @@ app.put('/api/profile', wrap(async (req, res) => {
       }
     }
   }
+  if (Object.prototype.hasOwnProperty.call(b, 'age')) { const age = cleanNum(b.age, 13, 100); if (b.age === null || b.age === '') update.age = null; else if (age !== undefined) update.age = age; }
+  if (['male','female','other',''].includes(b.sex)) update.sex = b.sex;
+  if (['muscle','fat_loss','strength','fitness'].includes(b.fitnessGoal)) update.fitnessGoal = b.fitnessGoal;
+  if (['beginner','intermediate','advanced'].includes(b.experience)) update.experience = b.experience;
+  if (Object.prototype.hasOwnProperty.call(b, 'trainingDays')) { const days = cleanNum(b.trainingDays, 2, 6); if (days !== undefined && Number.isInteger(days)) update.trainingDays = days; }
+  const equipment = cleanStr(b.equipment, 300); if (equipment !== undefined) update.equipment = equipment;
+  const limitations = cleanStr(b.limitations, 500); if (limitations !== undefined) update.limitations = limitations;
   const notes = cleanStr(b.notes, 1000);
   if (notes !== undefined) update.notes = notes;
   if (!Object.keys(update).length) return res.status(400).json({ error: 'لا توجد بيانات صالحة للتحديث' });
@@ -241,6 +255,30 @@ app.get('/api/exercises', wrap(async (req, res) => {
 }));
 
 app.get('/api/workouts', wrap(async (req, res) => res.json(await Workout.find({ ownerId: req.userId }).sort({ day: 1 }))));
+
+app.post('/api/workouts/generate', wrap(async (req, res) => {
+  const profile = await Profile.findOne({ ownerId: req.userId });
+  if (!profile || !profile.trainingDays || !profile.experience || !profile.fitnessGoal) return res.status(400).json({ error: 'أكمل الهدف الرياضي ومستوى الخبرة وعدد أيام التدريب من ملفك الرياضي أولاً.' });
+  const templates = {
+    2: [['UPPER','الجزء العلوي',['Chest','Back','Shoulders','Biceps','Triceps']],['LOWER','الجزء السفلي',['Legs','Hamstrings','Quads','Calves']]],
+    3: [['PUSH','صدر وأكتاف وترايسبس',['Chest','Shoulders','Triceps']],['PULL','ظهر وبايسبس',['Back','Rear delts','Biceps']],['LEGS','الأرجل',['Legs','Hamstrings','Quads','Calves']]],
+    4: [['UPPER A','الجزء العلوي',['Chest','Back','Shoulders']],['LOWER A','الجزء السفلي',['Legs','Hamstrings','Quads','Calves']],['UPPER B','الجزء العلوي',['Chest','Back','Biceps','Triceps']],['LOWER B','الجزء السفلي',['Legs','Hamstrings','Quads','Calves']]],
+    5: [['PUSH','صدر وأكتاف وترايسبس',['Chest','Shoulders','Triceps']],['PULL','ظهر وبايسبس',['Back','Rear delts','Biceps']],['LEGS','الأرجل',['Legs','Hamstrings','Quads','Calves']],['UPPER','الجزء العلوي',['Chest','Back','Shoulders']],['LOWER','الجزء السفلي',['Legs','Hamstrings','Quads','Calves']]],
+    6: [['PUSH A','دفع',['Chest','Shoulders','Triceps']],['PULL A','سحب',['Back','Rear delts','Biceps']],['LEGS A','أرجل',['Legs','Hamstrings','Quads','Calves']],['PUSH B','دفع',['Chest','Shoulders','Triceps']],['PULL B','سحب',['Back','Rear delts','Biceps']],['LEGS B','أرجل',['Legs','Hamstrings','Quads','Calves']]]
+  };
+  const all = await Exercise.find().sort({ name: 1 });
+  const selected = templates[profile.trainingDays];
+  const sets = profile.experience === 'beginner' ? 2 : 3;
+  const plan = []; let index = 0;
+  for (let day=1; day<=7; day++) {
+    if (index >= selected.length) { plan.push({ ownerId:req.userId,day,title:'REST',focus:'راحة واستشفاء',rest:true,exercises:[] }); continue; }
+    const [title,focus,muscles] = selected[index++];
+    const chosen = all.filter(e=>muscles.includes(e.muscle)).slice(0, profile.experience === 'beginner' ? 4 : 5);
+    plan.push({ ownerId:req.userId,day,title,focus,rest:false,exercises:chosen.map(e=>({exerciseId:e._id,name:e.name,sets,reps:profile.fitnessGoal==='strength'?'5–8':profile.experience==='beginner'?'10–12':'8–12',grip:'',notes:''})) });
+  }
+  await Workout.deleteMany({ ownerId:req.userId });
+  res.json(await Workout.insertMany(plan));
+}));
 
 app.get('/api/logs', wrap(async (req, res) => res.json(await Log.find({ ownerId: req.userId }).sort({ date: -1 }).limit(100))));
 
