@@ -9,14 +9,15 @@ import Empty from'./components/Empty.jsx';
 import Login from'./components/Login.jsx';
 import Register from'./components/Register.jsx';
 import Logout from'./components/Logout.jsx';
+import Landing from'./components/Landing.jsx';
 function App(){
- const[tab,setTab]=useState('dashboard'),[profile,setProfile]=useState(null),[workouts,setWorkouts]=useState([]),[exercises,setExercises]=useState([]),[logs,setLogs]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[search,setSearch]=useState(''),[muscle,setMuscle]=useState('All'),[chat,setChat]=useState([]),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[modal,setModal]=useState(null),[form,setForm]=useState({exerciseName:'',workoutTitle:'PULL',entries:[{weight:'',reps:'',note:''}],summary:''}),[authed,setAuthed]=useState(!!getToken()),[authMode,setAuthMode]=useState('login'),[authErr,setAuthErr]=useState(''),[authBusy,setAuthBusy]=useState(false),[chartEx,setChartEx]=useState('');
+ const[tab,setTab]=useState('dashboard'),[profile,setProfile]=useState(null),[workouts,setWorkouts]=useState([]),[exercises,setExercises]=useState([]),[logs,setLogs]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[search,setSearch]=useState(''),[muscle,setMuscle]=useState('All'),[chat,setChat]=useState([]),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[modal,setModal]=useState(null),[form,setForm]=useState({exerciseName:'',workoutTitle:'PULL',entries:[{weight:'',reps:'',note:''}],summary:''}),[authed,setAuthed]=useState(!!getToken()),[publicMode,setPublicMode]=useState('home'),[authMode,setAuthMode]=useState('login'),[authErr,setAuthErr]=useState(''),[authBusy,setAuthBusy]=useState(false),[chartEx,setChartEx]=useState('');
  async function refresh(){try{const[p,w,e,l]=await Promise.all([api('/profile'),api('/workouts'),api('/exercises'),api('/logs')]);setProfile(p);setWorkouts(w);setExercises(e);setLogs(l);setError('')}catch(e){if(e instanceof AuthError){setAuthed(false);return}setError(e.message+' — تأكد أن الخادم وقاعدة MongoDB يعملان.')}finally{setLoading(false)}}
  useEffect(()=>{if(authed)refresh();else setLoading(false)},[authed]);
  const fail=e=>{if(e instanceof AuthError)setAuthed(false);else alert(e.message)};
  async function login(credentials){setAuthBusy(true);setAuthErr('');try{const d=await api('/login',{method:'POST',body:JSON.stringify(credentials)});setToken(d.token);setLoading(true);setAuthed(true)}catch(e){setAuthErr(e.message)}finally{setAuthBusy(false)}}
  async function register(details){setAuthBusy(true);setAuthErr('');try{const d=await api('/register',{method:'POST',body:JSON.stringify(details)});setToken(d.token);setLoading(true);setAuthed(true)}catch(e){setAuthErr(e.message)}finally{setAuthBusy(false)}}
- function logout(){setToken('');setAuthed(false);setAuthErr('');setAuthMode('login');setChat([]);setProfile(null);setWorkouts([]);setExercises([]);setLogs([]);}
+ function logout(){setToken('');setAuthed(false);setPublicMode('home');setAuthErr('');setAuthMode('login');setChat([]);setProfile(null);setWorkouts([]);setExercises([]);setLogs([]);}
  const isoDay=(new Date().getDay()+6)%7+1;
  const todayW=workouts.find(w=>w.day===isoDay);
  const weekdayName=new Date().toLocaleDateString('en-US',{weekday:'long'}).toUpperCase();
@@ -30,6 +31,7 @@ function App(){
  const weightData=[...logs].reverse().filter(l=>l.exerciseName===activeEx&&topWeight(l)!==null).map(l=>({name:new Date(l.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}),weight:topWeight(l)}));
  async function saveLog(){try{await api('/logs',{method:'POST',body:JSON.stringify(form)});setModal(null);setForm({exerciseName:'',workoutTitle:'PULL',entries:[{weight:'',reps:'',note:''}],summary:''});refresh()}catch(e){fail(e)}}
  async function sendChat(){if(!message.trim())return;const q=message;setChat(c=>[...c,{role:'user',text:q}]);setMessage('');setBusy(true);try{const d=await api('/coach',{method:'POST',body:JSON.stringify({message:q})});setChat(c=>[...c,{role:'assistant',text:d.reply}])}catch(e){if(e instanceof AuthError)setAuthed(false);setChat(c=>[...c,{role:'assistant',text:e.message}])}finally{setBusy(false)}}
+ if(!authed && publicMode==='home')return <Landing onLogin={()=>{setAuthMode('login');setAuthErr('');setPublicMode('auth')}} onRegister={()=>{setAuthMode('register');setAuthErr('');setPublicMode('auth')}}/>;
  if(!authed)return authMode==='register'
   ? <Register onRegister={register} onSwitch={()=>{setAuthMode('login');setAuthErr('')}} error={authErr} busy={authBusy}/>
   : <Login onLogin={login} onSwitch={()=>{setAuthMode('register');setAuthErr('')}} error={authErr} busy={authBusy}/>;
