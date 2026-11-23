@@ -184,7 +184,8 @@ app.post('/api/register', loginLimiter, wrap(async (req, res) => {
   }
   if (await User.exists({ email })) return res.status(409).json({ error: 'هذا البريد مسجّل مسبقاً. جرّب تسجيل الدخول.' });
   const user = await User.create({ email, passwordHash: await hashPassword(password) });
-  if (await User.countDocuments() === 1) {
+  const firstUser = await User.findOne().sort({ createdAt: 1, _id: 1 });
+  if (String(firstUser._id) === String(user._id)) {
     // The first account inherits the existing single-user FitMate data.
     await Promise.all([
       Profile.updateMany({ ownerId: { $exists: false } }, { $set: { ownerId: user._id } }),
