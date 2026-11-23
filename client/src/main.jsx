@@ -3,13 +3,11 @@ import{createRoot}from'react-dom/client';
 import{Dumbbell,LayoutDashboard,CalendarDays,BookOpen,ChartNoAxesCombined,MessageCircle,Settings,Plus,Search,Target,Flame,Weight,Clock,ChevronLeft,Menu,X,Send,Trash2,Activity}from'lucide-react';
 import{ResponsiveContainer,LineChart,Line,XAxis,YAxis,Tooltip,CartesianGrid,AreaChart,Area}from'recharts';
 import'./style.css';
-const API=(import.meta.env.VITE_API_URL||'http://localhost:5000')+'/api';
-let token=localStorage.getItem('fitmate_token')||'';
-const setToken=t=>{token=t;t?localStorage.setItem('fitmate_token',t):localStorage.removeItem('fitmate_token')};
-class AuthError extends Error{}
-async function api(path,opts={}){const r=await fetch(API+path,{...opts,headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})}});const d=await r.json().catch(()=>({}));if(r.status===401&&path!=='/login'){setToken('');throw new AuthError(d.error||'انتهت الجلسة، سجّل الدخول من جديد')}if(!r.ok)throw new Error(d.error||'Request failed');return d}
+import{api,setToken,getToken,AuthError}from'./api.js';
+import Stat from'./components/Stat.jsx';
+import Empty from'./components/Empty.jsx';
 function App(){
- const[tab,setTab]=useState('dashboard'),[profile,setProfile]=useState(null),[workouts,setWorkouts]=useState([]),[exercises,setExercises]=useState([]),[logs,setLogs]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[search,setSearch]=useState(''),[muscle,setMuscle]=useState('All'),[chat,setChat]=useState([]),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[modal,setModal]=useState(null),[form,setForm]=useState({exerciseName:'',workoutTitle:'PULL',entries:[{weight:'',reps:'',note:''}],summary:''}),[authed,setAuthed]=useState(!!token),[loginPw,setLoginPw]=useState(''),[loginErr,setLoginErr]=useState(''),[chartEx,setChartEx]=useState('');
+ const[tab,setTab]=useState('dashboard'),[profile,setProfile]=useState(null),[workouts,setWorkouts]=useState([]),[exercises,setExercises]=useState([]),[logs,setLogs]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[search,setSearch]=useState(''),[muscle,setMuscle]=useState('All'),[chat,setChat]=useState([]),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[modal,setModal]=useState(null),[form,setForm]=useState({exerciseName:'',workoutTitle:'PULL',entries:[{weight:'',reps:'',note:''}],summary:''}),[authed,setAuthed]=useState(!!getToken()),[loginPw,setLoginPw]=useState(''),[loginErr,setLoginErr]=useState(''),[chartEx,setChartEx]=useState('');
  async function refresh(){try{const[p,w,e,l]=await Promise.all([api('/profile'),api('/workouts'),api('/exercises'),api('/logs')]);setProfile(p);setWorkouts(w);setExercises(e);setLogs(l);setError('')}catch(e){if(e instanceof AuthError){setAuthed(false);return}setError(e.message+' — تأكد أن الخادم وقاعدة MongoDB يعملان.')}finally{setLoading(false)}}
  useEffect(()=>{if(authed)refresh();else setLoading(false)},[authed]);
  const fail=e=>{if(e instanceof AuthError)setAuthed(false);else alert(e.message)};
@@ -45,6 +43,4 @@ function App(){
  {modal==='log'&&<div className="overlay"><div className="modal"><button className="close" onClick={()=>setModal(null)}><X/></button><span className="eyebrow">WORKOUT TRACKER</span><h2>تسجيل تمرين</h2><label>اسم التمرين<input value={form.exerciseName} onChange={e=>setForm({...form,exerciseName:e.target.value})}/></label><label>اليوم<select value={form.workoutTitle} onChange={e=>setForm({...form,workoutTitle:e.target.value})}>{['PUSH','PULL','LEGS','UPPER'].map(x=><option key={x}>{x}</option>)}</select></label>{form.entries.map((entry,i)=><div className="entry-fields" key={i}><label>الوزن<input placeholder="مثلاً 20 kg أو حجر 10" value={entry.weight} onChange={e=>setForm({...form,entries:form.entries.map((x,j)=>j===i?{...x,weight:e.target.value}:x)})}/></label><label>التكرارات<input type="number" placeholder="12" value={entry.reps} onChange={e=>setForm({...form,entries:form.entries.map((x,j)=>j===i?{...x,reps:e.target.value}:x)})}/></label></div>)}<button className="ghost" onClick={()=>setForm({...form,entries:[...form.entries,{weight:'',reps:'',note:''}]})}>+ إضافة مجموعة</button><label>ملاحظات<textarea value={form.summary} onChange={e=>setForm({...form,summary:e.target.value})} placeholder="ملاحظات عن الأداء…"/></label><button className="primary full" onClick={saveLog}>حفظ السجل</button></div></div>}
  </div>
 }
-function Stat({icon:Icon,label,value,sub}){return <div className="stat"><div className="stat-top"><span>{label}</span><Icon size={19}/></div><strong>{value}</strong><small>{sub}</small></div>}
-function Empty({text}){return <div className="empty"><Activity size={26}/><p>{text}</p></div>}
 createRoot(document.getElementById('root')).render(<App/>);
