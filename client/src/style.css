@@ -709,3 +709,104 @@ p{line-height:1.75}
     max-width: 100%;
   }
 }
+
+
+/* Landing responsive text and navigation containment */
+.landing .landing-hero-content {
+  width: min(100%, 590px);
+  min-width: 0;
+}
+.landing .landing-hero-content > p,
+.landing .landing-section-top > p,
+.landing .training-card-copy > p,
+.landing .training-feature p,
+.landing .landing-feature-grid p,
+.landing .landing-final > p,
+.landing .preview-copy p {
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+.landing .landing-nav nav {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.landing .landing-nav nav button,
+.landing .landing-actions button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+@media (min-width: 761px) and (max-width: 1050px) {
+  .landing-nav {
+    gap: 14px;
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+  .landing .landing-brand {
+    min-width: 150px;
+  }
+  .landing .landing-nav nav {
+    gap: 10px;
+  }
+  .landing .landing-nav nav button {
+    font-size: 10px;
+  }
+  .landing .landing-actions {
+    gap: 5px;
+  }
+  .landing .landing-actions .landing-tool {
+    padding: 7px;
+  }
+}
+@media (max-width: 900px) and (min-width: 761px) {
+  .landing .landing-nav nav {
+    display: none;
+  }
+  .landing .landing-menu {
+    display: grid;
+    place-items: center;
+    padding: 6px;
+  }
+  .landing .landing-nav nav.open {
+    display: flex;
+    position: absolute;
+    top: 69px;
+    right: 0;
+    left: 0;
+    padding: 16px 22px;
+    background: #151b12;
+    border-bottom: 1px solid #ffffff20;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 5px;
+  }
+  .landing .landing-nav nav.open button {
+    text-align: right;
+    padding: 12px;
+    font-size: 12px;
+  }
+  .landing-light .landing-nav nav.open {
+    background: #f7f8f3;
+    border-bottom-color: #dfe3d7;
+  }
+  .landing-light .landing-nav nav.open button {
+    color: #30382a;
+  }
+}
+@media (max-width: 760px) {
+  .landing .landing-hero-content {
+    width: 100%;
+  }
+  .landing .landing-hero h1 {
+    max-width: 100%;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+  .landing .landing-hero-content > p {
+    line-height: 1.9;
+  }
+}
