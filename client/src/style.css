@@ -523,3 +523,52 @@ p{line-height:1.75}
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+
+/* Dashboard header only: prevent title/status overlap on narrow screens */
+.main > .dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  min-width: 0;
+}
+.main > .dashboard-header > div:first-child {
+  flex: 1 1 190px;
+  min-width: 0;
+}
+.main > .dashboard-header .eyebrow {
+  display: block;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.main > .dashboard-header h1 {
+  font-size: clamp(19px, 2.4vw, 25px);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  margin-top: 4px;
+}
+.main > .dashboard-header .header-right {
+  flex: 0 0 auto;
+  min-width: 0;
+  white-space: nowrap;
+}
+@media (max-width: 480px) {
+  .main > .dashboard-header {
+    align-items: flex-start;
+    gap: 8px 10px;
+    margin-bottom: 18px;
+  }
+  .main > .dashboard-header > div:first-child {
+    flex-basis: 150px;
+  }
+  .main > .dashboard-header h1 {
+    font-size: clamp(18px, 5vw, 22px);
+  }
+}
+@media (max-width: 360px) {
+  .main > .dashboard-header .header-right {
+    margin-inline-start: auto;
+  }
+}
