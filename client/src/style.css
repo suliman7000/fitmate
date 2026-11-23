@@ -935,3 +935,52 @@ p{line-height:1.75}
     margin-top: 32px;
   }
 }
+
+
+/* Landing navigation: balanced spacing and non-overlapping menu items */
+.landing .landing-nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 2vw, 28px);
+}
+.landing .landing-nav > .landing-brand {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+.landing .landing-nav > nav {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(10px, 1.6vw, 24px);
+  margin: 0;
+}
+.landing .landing-nav > nav button {
+  flex: 0 0 auto;
+  padding: 9px 3px;
+  font-size: clamp(10px, 0.85vw, 12px);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.landing .landing-nav > .landing-actions {
+  flex: 0 0 auto;
+  min-width: max-content;
+  gap: clamp(5px, 0.7vw, 9px);
+}
+@media (min-width: 901px) and (max-width: 1100px) {
+  .landing .landing-nav {
+    padding-inline: 20px;
+    gap: 10px;
+  }
+  .landing .landing-nav > nav {
+    gap: 8px;
+  }
+  .landing .landing-nav > nav button {
+    font-size: 10px;
+    padding-inline: 2px;
+  }
+  .landing .landing-nav > .landing-actions .landing-tool {
+    padding: 7px;
+  }
+}
