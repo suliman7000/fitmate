@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Dumbbell, User, Mail, Lock } from 'lucide-react';
 
-export default function Register({ onRegister, onSwitch, error, busy }) {
+export default function Register({ onRegister, onSwitch, onBack, error, busy }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,5 +15,6 @@ export default function Register({ onRegister, onSwitch, error, busy }) {
     <label>كلمة المرور <small>(8 أحرف على الأقل)</small><div className="auth-input"><Lock size={17}/><input type="password" autoComplete="new-password" minLength={8} maxLength={72} required value={password} onChange={e=>setPassword(e.target.value)} placeholder="أنشئ كلمة مرور قوية"/></div></label>
     <button className="primary full auth-submit" disabled={busy}>{busy?'جاري إنشاء الحساب…':'إنشاء حساب'}</button>
     <p className="auth-switch">عندك حساب بالفعل؟ <button type="button" onClick={onSwitch}>تسجيل الدخول</button></p>
+  <p className="auth-switch"><button type="button" onClick={onBack}>العودة للصفحة الرئيسية</button></p>
   </form></div>;
 }
