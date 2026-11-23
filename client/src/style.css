@@ -326,3 +326,114 @@ p{line-height:1.75}
 [dir="ltr"]{text-align:inherit}
 [dir="rtl"] .main,[dir="rtl"] .settings{direction:rtl}
 [dir="ltr"] .main,[dir="ltr"] .settings{direction:ltr}
+
+
+/* Final responsive normalization: prevent text collisions and unstable card sizing */
+:root{
+  --space-fluid:clamp(12px,2vw,22px);
+}
+.main{
+  width:min(calc(100% - 250px),1600px);
+  margin-right:250px;
+  padding-inline:clamp(14px,2.5vw,38px);
+}
+.main *{min-width:0}
+.main h1{font-size:clamp(19px,2vw,25px);line-height:1.35}
+.main h2{font-size:clamp(18px,2vw,27px);line-height:1.35}
+.main h3{line-height:1.4}
+.main p,.main small,.main label{overflow-wrap:anywhere}
+.main button{line-height:1.45}
+.stats{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}
+.week-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,135px),1fr))}
+.program-list{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))}
+.exercise-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))}
+.profile-overview{flex-wrap:wrap}
+.profile-overview-actions{min-width:0}
+.profile-overview-actions button{max-width:100%;overflow-wrap:anywhere}
+.stat-top{gap:10px;align-items:flex-start}
+.stat-top span{min-width:0;overflow-wrap:anywhere}
+.stat strong{font-size:clamp(18px,2.2vw,27px);line-height:1.3;overflow-wrap:anywhere}
+.day-card{min-width:0}
+.day-card b{font-size:clamp(13px,1.5vw,17px);line-height:1.4}
+.day-card span,.day-card em{line-height:1.5;overflow-wrap:anywhere}
+.workout-title{gap:12px;flex-wrap:wrap}
+.workout-title>div{min-width:0;flex:1 1 180px}
+.workout-title h3{font-size:clamp(17px,1.8vw,22px);overflow-wrap:anywhere}
+.exercise-line{min-width:0;flex-wrap:wrap}
+.exercise-info{flex:1 1 120px}
+.exercise-info b,.exercise-info small{overflow-wrap:anywhere;line-height:1.5}
+.exercise-line>strong{margin-inline-start:auto}
+.log-row{min-width:0}
+.log-row>div:nth-child(2){flex:1 1 130px}
+.log-row>span{flex:0 1 auto;max-width:100%;text-align:start;overflow-wrap:anywhere}
+.section-head{align-items:center}
+.section-head>div{min-width:0}
+.section-head h3{font-size:clamp(16px,1.7vw,19px);overflow-wrap:anywhere}
+.primary,.ghost,.icon-btn{min-height:40px;line-height:1.4;white-space:normal;overflow-wrap:anywhere}
+.settings{grid-template-columns:repeat(2,minmax(0,1fr))}
+.settings label{overflow-wrap:anywhere}
+.settings input,.settings select,.settings textarea{min-width:0;max-width:100%}
+.toolbar{min-width:0}
+.search{min-width:0}
+.search input{min-width:0}
+.landing-hero h1{font-size:clamp(40px,7vw,94px);line-height:1.12;letter-spacing:clamp(-3px,-.2vw,-1px)}
+.landing-section-top h2,.landing-feature-heading h2{font-size:clamp(32px,5vw,65px);line-height:1.16;letter-spacing:clamp(-2px,-.15vw,-.5px)}
+.landing-final h2{font-size:clamp(36px,6vw,72px);line-height:1.18}
+.landing-nav{flex-wrap:wrap}
+.landing-nav nav button,.landing-actions button{white-space:normal;line-height:1.4}
+.training-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
+.landing-feature-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}
+.training-photo{height:clamp(190px,24vw,310px)}
+.training-card-copy h3{font-size:clamp(15px,1.6vw,19px);line-height:1.4}
+.training-card-copy p{overflow-wrap:anywhere}
+@media(max-width:1100px){
+ .main{width:calc(100% - 215px);margin-right:215px}
+ .settings{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+ .main{width:calc(100% - 65px);margin-right:65px;padding:16px 12px 36px}
+ .profile-overview{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+ .profile-overview-actions{display:flex;flex-wrap:wrap}
+ .profile-overview-actions button{flex:1 1 180px}
+ .settings{grid-template-columns:minmax(0,1fr)}
+ .settings>h3,.settings>.profile-notice,.settings>.primary{grid-column:1}
+ .section-head{align-items:flex-start}
+ .section-head>div{flex:1 1 100%}
+ .section-head .primary,.section-head .ghost{flex:0 1 auto}
+ .week-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,125px),1fr))}
+ .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .program-list{grid-template-columns:minmax(0,1fr)}
+ .exercise-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .landing-nav{flex-wrap:nowrap}
+ .landing-hero h1{font-size:clamp(39px,9vw,58px)}
+}
+@media(max-width:480px){
+ .main{width:calc(100% - 54px);margin-right:54px;padding:14px 9px 30px}
+ .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .stat{padding:10px}
+ .stat-top{font-size:9px}
+ .stat strong{font-size:clamp(16px,5vw,20px)}
+ .profile-overview-actions{display:grid;grid-template-columns:minmax(0,1fr)}
+ .profile-overview-actions button{width:100%}
+ .section-head{gap:9px}
+ .section-head .primary,.section-head .ghost{width:100%;justify-content:center}
+ .week-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .exercise-grid{grid-template-columns:minmax(0,1fr)}
+ .workout-title{align-items:flex-start}
+ .count-pill,.rest-pill{white-space:normal;text-align:center}
+ .exercise-line>strong{margin-inline-start:auto}
+ .log-row{align-items:flex-start}
+ .log-row>span{width:100%;margin:0}
+ .landing-nav{gap:5px}
+ .landing-actions{flex-wrap:wrap;justify-content:flex-end}
+ .landing-hero h1{font-size:clamp(36px,11vw,50px)}
+ .landing-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:360px){
+ .main{padding-inline:7px}
+ .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .stat-top{font-size:8px}
+ .stat strong{font-size:16px}
+ .week-grid{grid-template-columns:minmax(0,1fr)}
+ .landing-actions .landing-tool span{display:none}
+}
